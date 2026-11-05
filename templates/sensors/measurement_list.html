@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load tz %}
+{% block title %}{% if history_sensor %}Historique — {{ history_sensor.name }}{% else %}Mesures{% endif %} — SmartFarm{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div>
+      <p class="eyebrow">Surveillance environnementale</p>
+      {% if history_sensor %}<h1>Historique — {{ history_sensor.name }}</h1><p class="muted">{{ history_sensor.get_sensor_type_display }} · {{ history_sensor.space.building.name }} / {{ history_sensor.space.name }}</p>{% else %}<h1>Mesures</h1>{% endif %}
+    </div>
+    {% if history_sensor %}<a class="button button-secondary" href="{% url 'sensors:sensor-detail' history_sensor.pk %}">Retour au capteur</a>{% endif %}
+  </div>
+  <form method="get" class="filter-bar measurement-filter">
+    <label for="measurement-building">Bâtiment</label>
+    <select id="measurement-building" name="building">
+      <option value="">Tous</option>
+      {% for building in buildings %}<option value="{{ building.pk }}" {% if selected_building == building.pk|stringformat:"s" %}selected{% endif %}>{{ building.name }}</option>{% endfor %}
+    </select>
+    <label for="measurement-space">Espace</label>
+    <select id="measurement-space" name="space">
+      <option value="">Tous</option>
+      {% for space in spaces %}<option value="{{ space.pk }}" {% if selected_space == space.pk|stringformat:"s" %}selected{% endif %}>{{ space.name }} — {{ space.building.name }}</option>{% endfor %}
+    </select>
+    <label for="measurement-sensor">Capteur</label>
+    <select id="measurement-sensor" name="sensor">
+      <option value="">Tous</option>
+      {% for sensor in sensors %}<option value="{{ sensor.pk }}" {% if selected_sensor == sensor.pk|stringformat:"s" %}selected{% endif %}>{{ sensor.name }}</option>{% endfor %}
+    </select>
+    <label for="measurement-date-from">Du</label><input id="measurement-date-from" type="date" name="date_from" value="{{ selected_date_from }}">
+    <label for="measurement-date-to">Au</label><input id="measurement-date-to" type="date" name="date_to" value="{{ selected_date_to }}">
+    <label for="measurement-ordering">Tri</label>
+    <select id="measurement-ordering" name="ordering">
+      <option value="-recorded_at" {% if selected_ordering == "-recorded_at" %}selected{% endif %}>Plus récent</option>
+      <option value="recorded_at" {% if selected_ordering == "recorded_at" %}selected{% endif %}>Plus ancien</option>
+    </select>
+    <button class="button button-secondary" type="submit">Filtrer</button>
+    {% if selected_sensor or selected_space or selected_building or selected_date_from or selected_date_to %}<a class="text-link" href="{% if history_sensor %}{% url 'sensors:sensor-measurements' history_sensor.pk %}{% else %}{% url 'sensors:measurement-list' %}{% endif %}">Effacer</a>{% endif %}
+  </form>
+  {% if filter_error %}<p class="message message-error" role="alert">{{ filter_error }}</p>{% endif %}
+  {% if measurements %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Capteur</th><th>Bâtiment / espace</th><th>Valeur</th><th>Date de mesure</th><th>Reçue le</th></tr></thead>
+      <tbody>{% for measurement in measurements %}
+        <tr>
+          <td><a href="{% url 'sensors:measurement-detail' measurement.pk %}">{{ measurement.sensor.name }}</a></td>
+          <td>{{ measurement.sensor.space.building.name }}<br><span class="muted">{{ measurement.sensor.space.name }}</span></td>
+          <td><strong>{{ measurement.value }} {{ measurement.sensor.unit }}</strong></td>
+          <td>{{ measurement.recorded_at|localtime|date:"Y-m-d H:i:s T" }}</td>
+          <td>{{ measurement.received_at|localtime|date:"Y-m-d H:i:s T" }}</td>
+        </tr>
+      {% endfor %}</tbody>
+    </table></div>
+    <nav class="pagination" aria-label="Pagination des mesures">
+      <span>Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} résultat{{ page_obj.paginator.count|pluralize }}</span>
+      <div class="actions">
+        {% if page_obj.has_previous %}<a class="button button-secondary" href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Précédent</a>{% endif %}
+        {% if page_obj.has_next %}<a class="button button-secondary" href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Suivant</a>{% endif %}
+      </div>
+    </nav>
+  {% else %}
+    <section class="empty-state"><h2>Aucune mesure trouvée</h2><p>{% if history_sensor %}Aucune mesure n’a encore été enregistrée pour ce capteur, ou les filtres ne correspondent à aucun résultat.{% else %}Aucune mesure ne correspond aux filtres sélectionnés.{% endif %}</p></section>
+  {% endif %}
+{% endblock %}

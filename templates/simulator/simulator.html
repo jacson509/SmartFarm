@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Simulateur IoT — SmartFarm{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><p class="eyebrow">Mesures de démonstration</p><h1>Simulateur IoT</h1><p class="muted">Le simulateur envoie des mesures vers l’API SmartFarm avec les capteurs réellement configurés.</p></div></div>
+
+  <section class="form-panel simulator-panel" aria-labelledby="setup-heading">
+    <h2 id="setup-heading">Configuration</h2>
+    {% csrf_token %}
+    <div class="form-field"><label for="sim-building">Bâtiment</label><select id="sim-building"><option value="">Choisir un bâtiment</option>{% for building in buildings %}<option value="{{ building.pk }}" {% if selected_building_id == building.pk %}selected{% endif %}>{{ building.name }}</option>{% endfor %}</select></div>
+    <div class="form-field"><label for="sim-space">Espace</label><select id="sim-space"><option value="">Choisir un espace</option>{% for space in spaces %}<option value="{{ space.pk }}" data-building-id="{{ space.building_id }}">{{ space.name }} — {{ space.building.name }}</option>{% endfor %}</select></div>
+    <fieldset class="simulator-sensors"><legend>Capteurs actifs de l’espace</legend>
+      {% if sensors %}<ul id="sim-sensor-list" hidden>{% for sensor in sensors %}<li data-space-id="{{ sensor.space_id }}"><label><input type="checkbox" name="sensor_ids" value="{{ sensor.pk }}"> {{ sensor.name }} — {{ sensor.get_sensor_type_display }} ({{ sensor.unit }})</label></li>{% endfor %}</ul>
+      {% else %}<p class="muted">Aucun capteur actif n’est disponible.</p>{% endif %}
+      <p id="sim-no-sensors" class="muted" hidden>Aucun capteur actif dans cet espace.</p>
+    </fieldset>
+    <div class="form-field interval-field"><label for="sim-interval">Intervalle d’envoi (secondes)</label><input id="sim-interval" type="number" min="{{ minimum_interval }}" step="1" value="5" required><small>Minimum : {{ minimum_interval }} secondes.</small></div>
+    <div class="actions simulator-actions"><button id="sim-start" class="button" type="button">Démarrer</button><button id="sim-stop" class="button button-secondary" type="button" disabled>Arrêter</button></div>
+  </section>
+
+  <section class="panel simulator-status-panel" aria-labelledby="status-heading">
+    <div class="section-heading"><h2 id="status-heading">État de la simulation</h2><span id="sim-state" class="badge badge-inactive" role="status">Arrêtée</span></div>
+    <dl class="simulator-summary"><dt>Mesures envoyées</dt><dd id="sim-count">0</dd><dt>Dernier envoi</dt><dd id="sim-last-sent">—</dd></dl>
+    <div class="section-heading"><h3>Dernières valeurs envoyées</h3></div>
+    <div id="sim-values-empty" class="empty-state"><p>Aucune valeur envoyée.</p></div>
+    <div id="sim-values-wrap" class="table-wrap" hidden><table><thead><tr><th>Capteur</th><th>Type</th><th>Valeur</th><th>Heure d’envoi</th></tr></thead><tbody id="sim-values"></tbody></table></div>
+    <div class="section-heading"><h3>Erreurs éventuelles</h3></div>
+    <p id="sim-errors-empty" class="muted">Aucune erreur.</p><ul id="sim-errors" class="simulator-errors" aria-live="polite"></ul>
+    <p id="sim-action-message" class="message" role="status" hidden></p>
+  </section>
+  {{ urls|json_script:"simulator-urls" }}
+  <script src="{% static 'js/simulator.js' %}" defer></script>
+{% endblock %}

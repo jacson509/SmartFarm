@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Capteurs — SmartFarm{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div><p class="eyebrow">Surveillance environnementale</p><h1>Capteurs</h1></div>
+    <a class="button" href="{% url 'sensors:sensor-create' %}">Ajouter un capteur</a>
+  </div>
+  <form method="get" class="filter-bar sensor-filter">
+    <label for="sensor-type-filter">Type</label>
+    <select id="sensor-type-filter" name="sensor_type">
+      <option value="">Tous les types</option>
+      {% for value, label in sensor_types %}<option value="{{ value }}" {% if selected_sensor_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+    <label for="sensor-building-filter">Bâtiment</label>
+    <select id="sensor-building-filter" name="building">
+      <option value="">Tous</option>
+      {% for building in buildings %}<option value="{{ building.pk }}" {% if selected_building == building.pk|stringformat:"s" %}selected{% endif %}>{{ building.name }}</option>{% endfor %}
+    </select>
+    <label for="sensor-space-filter">Espace</label>
+    <select id="sensor-space-filter" name="space">
+      <option value="">Tous</option>
+      {% for space in spaces %}<option value="{{ space.pk }}" {% if selected_space == space.pk|stringformat:"s" %}selected{% endif %}>{{ space.name }} — {{ space.building.name }}</option>{% endfor %}
+    </select>
+    <label for="sensor-active-filter">État</label>
+    <select id="sensor-active-filter" name="is_active">
+      <option value="">Tous</option>
+      <option value="true" {% if selected_is_active == "true" %}selected{% endif %}>Actif</option>
+      <option value="false" {% if selected_is_active == "false" %}selected{% endif %}>Inactif</option>
+    </select>
+    <button class="button button-secondary" type="submit">Filtrer</button>
+    {% if selected_sensor_type or selected_building or selected_space or selected_is_active %}<a class="text-link" href="{% url 'sensors:sensor-list' %}">Effacer</a>{% endif %}
+  </form>
+  {% if sensors %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Capteur</th><th>Type et unité</th><th>Bâtiment / espace</th><th>Seuils</th><th>État</th></tr></thead>
+      <tbody>{% for sensor in sensors %}
+        <tr>
+          <td><a href="{% url 'sensors:sensor-detail' sensor.pk %}">{{ sensor.name }}</a></td>
+          <td>{{ sensor.get_sensor_type_display }} ({{ sensor.unit }})</td>
+          <td><a href="{% url 'facilities:building-detail' sensor.space.building_id %}">{{ sensor.space.building.name }}</a><br><span class="muted">{{ sensor.space.name }}</span></td>
+          <td>{{ sensor.minimum_threshold }} à {{ sensor.maximum_threshold }} {{ sensor.unit }}</td>
+          <td><span class="badge {% if sensor.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if sensor.is_active %}Actif{% else %}Inactif{% endif %}</span></td>
+        </tr>
+      {% endfor %}</tbody>
+    </table></div>
+  {% else %}
+    <section class="empty-state"><h2>Aucun capteur trouvé</h2><p>Ajoutez un capteur ou ajustez les filtres.</p></section>
+  {% endif %}
+{% endblock %}

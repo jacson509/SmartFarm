@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Espaces — SmartFarm{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div><p class="eyebrow">Installations</p><h1>Espaces</h1></div>
+    <a class="button" href="{% url 'facilities:space-create' %}">Ajouter un espace</a>
+  </div>
+  <form method="get" class="filter-bar">
+    <label for="building-filter">Bâtiment</label>
+    <select id="building-filter" name="building">
+      <option value="">Tous les bâtiments</option>
+      {% for building in buildings %}
+        <option value="{{ building.pk }}" {% if selected_building == building.pk|stringformat:"s" %}selected{% endif %}>{{ building.name }}</option>
+      {% endfor %}
+    </select>
+    <button class="button button-secondary" type="submit">Filtrer</button>
+    {% if selected_building %}<a class="text-link" href="{% url 'facilities:space-list' %}">Effacer</a>{% endif %}
+  </form>
+  {% if spaces %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Espace</th><th>Bâtiment</th><th>État</th><th></th></tr></thead>
+      <tbody>{% for space in spaces %}
+        <tr>
+          <td><a href="{% url 'facilities:space-detail' space.pk %}">{{ space.name }}</a></td>
+          <td><a href="{% url 'facilities:building-detail' space.building_id %}">{{ space.building.name }}</a></td>
+          <td><span class="badge {% if space.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if space.is_active %}Actif{% else %}Inactif{% endif %}</span></td>
+          <td><a class="text-link" href="{% url 'facilities:space-update' space.pk %}">Modifier</a></td>
+        </tr>
+      {% endfor %}</tbody>
+    </table></div>
+  {% else %}
+    <section class="empty-state"><h2>Aucun espace trouvé</h2><p>Créez un espace ou modifiez le filtre de bâtiment.</p></section>
+  {% endif %}
+{% endblock %}

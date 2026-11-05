@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load tz %}
+{% block title %}Commandes — {{ actuator.name }} — SmartFarm{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><p class="eyebrow">Historique d’actionneur</p><h1>Commandes — {{ actuator.name }}</h1><p class="muted">{{ actuator.space.building.name }} / {{ actuator.space.name }}</p></div><div class="actions"><a class="button button-secondary" href="{% url 'actuators:actuator-detail' actuator.pk %}">Retour à l’actionneur</a>{% if can_receive_command %}<a class="button" href="{% url 'actuators:command-create' actuator.pk %}">Nouvelle commande</a>{% endif %}</div></div>
+  <form method="get" class="filter-bar actuator-filter">
+    <label for="command-status-filter">Statut</label><select id="command-status-filter" name="status"><option value="">Tous</option>{% for value, label in status_choices %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <label for="command-type-filter">Type</label><select id="command-type-filter" name="command_type"><option value="">Tous</option><option value="POWER_STATE" {% if selected_command_type == "POWER_STATE" %}selected{% endif %}>État marche/arrêt</option></select>
+    <button class="button button-secondary" type="submit">Filtrer</button>
+  </form>
+  {% if filter_error %}<p class="message message-error" role="alert">{{ filter_error }}</p>{% endif %}
+  {% if commands %}<div class="table-wrap"><table><thead><tr><th>Commande</th><th>Valeur demandée</th><th>Statut</th><th>Demandée le</th><th>Exécutée le</th></tr></thead><tbody>{% for command in commands %}<tr><td>#{{ command.pk }} · {{ command.get_command_type_display }}</td><td>{{ command.get_value_display }}</td><td><span class="badge {% if command.status == 'EXECUTED' %}badge-active{% else %}badge-inactive{% endif %}">{{ command.get_status_display }}</span></td><td>{{ command.requested_at|localtime|date:"Y-m-d H:i:s T" }}</td><td>{% if command.executed_at %}{{ command.executed_at|localtime|date:"Y-m-d H:i:s T" }}{% else %}—{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+    <nav class="pagination" aria-label="Pagination des commandes"><span>Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} résultat{{ page_obj.paginator.count|pluralize }}</span><div class="actions">{% if page_obj.has_previous %}<a class="button button-secondary" href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Précédent</a>{% endif %}{% if page_obj.has_next %}<a class="button button-secondary" href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Suivant</a>{% endif %}</div></nav>
+  {% else %}<section class="empty-state"><h2>Aucune commande</h2><p>Aucune commande ne correspond aux filtres sélectionnés.</p></section>{% endif %}
+{% endblock %}

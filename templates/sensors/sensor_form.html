@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ page_title }} — SmartFarm{% endblock %}
+{% block content %}
+  <p class="eyebrow"><a href="{% url 'sensors:sensor-list' %}">Capteurs</a> / Formulaire</p>
+  <section class="form-panel">
+    <h1>{{ page_title }}</h1>
+    <p class="muted">Les seuils configurent la future surveillance. Limites techniques : −50 à 80 °C ou 0 à 100 %.</p>
+    <form method="post" data-sensor-form>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form-errors" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+      {% for field in form %}
+        <div class="form-field{% if field.errors %} has-errors{% endif %}">
+          {% if field.field.widget.input_type == "checkbox" %}
+            <label class="checkbox-label">{{ field }} {{ field.label }}</label>
+          {% else %}
+            <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %}<span aria-hidden="true"> *</span>{% endif %}</label>
+            {{ field }}
+          {% endif %}
+          {% if field.name == "sensor_type" %}<small>Unité attribuée automatiquement : <strong data-unit-preview>{% if form.instance.unit %}{{ form.instance.unit }}{% else %}choisie selon le type{% endif %}</strong>.</small>{% endif %}
+          {% for error in field.errors %}<p class="field-error" role="alert">{{ error }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+      <div class="actions"><button class="button" type="submit">Enregistrer</button><a class="button button-secondary" href="{{ cancel_url }}">Annuler</a></div>
+    </form>
+  </section>
+  <script src="{% static 'js/sensor-validation.js' %}" defer></script>
+{% endblock %}

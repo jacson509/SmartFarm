@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Connexion — SmartFarm</title>
+</head>
+<body>
+  <main>
+    <h1>Connexion à SmartFarm</h1>
+    <form method="post">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <p role="alert">Nom d’utilisateur ou mot de passe incorrect.</p>
+      {% endif %}
+      <div>
+        <label for="id_username">Nom d’utilisateur</label>
+        {{ form.username }}
+        {{ form.username.errors }}
+      </div>
+      <div>
+        <label for="id_password">Mot de passe</label>
+        {{ form.password }}
+        {{ form.password.errors }}
+      </div>
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit">Se connecter</button>
+    </form>
+  </main>
+</body>
+</html>

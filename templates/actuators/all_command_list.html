@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load tz %}
+{% block title %}Commandes — SmartFarm{% endblock %}
+{% block content %}
+  <div class="page-heading"><div><p class="eyebrow">Historique</p><h1>Commandes</h1><p class="muted">Historique conservé des commandes enregistrées dans SmartFarm.</p></div></div>
+  <form method="get" class="filter-bar actuator-filter">
+    <label for="all-command-status">Statut</label><select id="all-command-status" name="status"><option value="">Tous</option>{% for value, label in status_choices %}<option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <button class="button button-secondary" type="submit">Filtrer</button>
+  </form>
+  {% if filter_error %}<p class="message message-error" role="alert">{{ filter_error }}</p>{% endif %}
+  {% if commands %}
+    <div class="table-wrap"><table><thead><tr><th>Actionneur</th><th>Bâtiment / espace</th><th>Commande</th><th>Valeur</th><th>Statut</th><th>Demandée le</th></tr></thead><tbody>
+      {% for command in commands %}<tr><td><a href="{% url 'actuators:actuator-detail' command.actuator_id %}">{{ command.actuator.name }}</a></td><td>{{ command.actuator.space.building.name }} / {{ command.actuator.space.name }}</td><td>{{ command.get_command_type_display }}</td><td>{{ command.get_value_display }}</td><td>{{ command.get_status_display }}</td><td>{{ command.requested_at|localtime|date:"d/m/Y H:i:s" }}</td></tr>{% endfor %}
+    </tbody></table></div>
+    <nav class="pagination" aria-label="Pagination des commandes"><span>Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }} · {{ page_obj.paginator.count }} commande{{ page_obj.paginator.count|pluralize }}</span><div class="actions">{% if page_obj.has_previous %}<a class="button button-secondary" href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ page_obj.previous_page_number }}">Précédent</a>{% endif %}{% if page_obj.has_next %}<a class="button button-secondary" href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ page_obj.next_page_number }}">Suivant</a>{% endif %}</div></nav>
+  {% else %}<section class="empty-state"><h2>Aucune commande enregistrée</h2><p>Les commandes apparaîtront ici lorsqu’elles seront enregistrées.</p></section>{% endif %}
+{% endblock %}

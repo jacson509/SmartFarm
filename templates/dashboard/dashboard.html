@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% load static tz %}
+{% block title %}Dashboard — SmartFarm{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div><p class="eyebrow">SmartFarm · suivi des bâtiments</p><h1>Dashboard</h1><p class="muted">Données enregistrées dans l’application. Dernière actualisation de la page : {{ generated_at|localtime|date:"d/m/Y H:i" }}.</p></div>
+  </div>
+
+  <section aria-label="Statistiques principales" class="dashboard-stats">
+    <article class="dashboard-stat"><span>Bâtiments</span><strong>{{ counts.buildings }}</strong><a href="{% url 'facilities:building-list' %}">Voir les bâtiments</a></article>
+    <article class="dashboard-stat"><span>Espaces</span><strong>{{ counts.spaces }}</strong><a href="{% url 'facilities:space-list' %}">Voir les espaces</a></article>
+    <article class="dashboard-stat"><span>Capteurs</span><strong>{{ counts.sensors }}</strong><a href="{% url 'sensors:sensor-list' %}">Voir les capteurs</a></article>
+    <article class="dashboard-stat"><span>Actionneurs</span><strong>{{ counts.actuators }}</strong><a href="{% url 'actuators:actuator-list' %}">Voir les actionneurs</a></article>
+  </section>
+
+  <section aria-labelledby="environment-heading">
+    <div class="section-heading"><h2 id="environment-heading">Conditions environnementales</h2><span class="muted">Dernières mesures enregistrées, pas des valeurs en temps réel</span></div>
+    <div class="environment-grid">
+      <article class="panel environment-card">
+        <h3>Température</h3>
+        {% if environment.temperature %}
+          <p class="environment-value">{{ environment.temperature.value }} <span>{{ environment.temperature.unit }}</span></p>
+          <p>{{ environment.temperature.sensor }} · {{ environment.temperature.space }}</p>
+          <p class="muted">Dernière mesure enregistrée le {{ environment.temperature.recorded_at_local|date:"d/m/Y à H:i" }}</p>
+        {% else %}<p class="muted">Aucune mesure de température enregistrée.</p>{% endif %}
+      </article>
+      <article class="panel environment-card">
+        <h3>Humidité</h3>
+        {% if environment.humidity %}
+          <p class="environment-value">{{ environment.humidity.value }} <span>{{ environment.humidity.unit }}</span></p>
+          <p>{{ environment.humidity.sensor }} · {{ environment.humidity.space }}</p>
+          <p class="muted">Dernière mesure enregistrée le {{ environment.humidity.recorded_at_local|date:"d/m/Y à H:i" }}</p>
+        {% else %}<p class="muted">Aucune mesure d’humidité enregistrée.</p>{% endif %}
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="chart-heading">
+    <div class="section-heading"><h2 id="chart-heading">Évolution des mesures</h2></div>
+    <form method="get" class="filter-bar dashboard-period">
+      <label for="period">Période</label>
+      <select id="period" name="period">
+        <option value="24h" {% if selected_period == "24h" %}selected{% endif %}>Dernières 24 heures</option>
+        <option value="7d" {% if selected_period == "7d" %}selected{% endif %}>7 derniers jours</option>
+      </select>
+      <button class="button button-secondary" type="submit">Afficher</button>
+    </form>
+    <div class="panel chart-panel">
+      {% if chart_data.temperature or chart_data.humidity %}
+        <div class="chart-legend"><span><i class="legend-temperature"></i>Température (°C, axe gauche)</span><span><i class="legend-humidity"></i>Humidité (%, axe droit)</span></div>
+        <svg id="environment-chart" class="environment-chart" viewBox="0 0 760 300" role="img" aria-label="Graphique des mesures de température et d’humidité pour la période sélectionnée"></svg>
+      {% else %}<p class="muted">Aucune mesure disponible pour cette période.</p>{% endif %}
+      {{ chart_data|json_script:"dashboard-chart-data" }}
+    </div>
+  </section>
+
+  <section aria-labelledby="measurements-heading">
+    <div class="section-heading"><h2 id="measurements-heading">Dernières mesures</h2><a href="{% url 'sensors:measurement-list' %}">Voir l’historique</a></div>
+    {% if latest_measurements %}
+      <div class="table-wrap"><table><thead><tr><th>Capteur</th><th>Type</th><th>Valeur</th><th>Unité</th><th>Espace</th><th>Date de mesure</th></tr></thead><tbody>
+        {% for measurement in latest_measurements %}<tr><td>{{ measurement.sensor.name }}</td><td>{{ measurement.sensor.get_sensor_type_display }}</td><td>{{ measurement.value }}</td><td>{{ measurement.sensor.unit }}</td><td>{{ measurement.sensor.space.name }}</td><td>{{ measurement.recorded_at|localtime|date:"d/m/Y H:i:s" }}</td></tr>{% endfor %}
+      </tbody></table></div>
+    {% else %}<section class="empty-state"><h2>Aucune mesure enregistrée</h2><p>Les mesures apparaîtront ici lorsqu’elles seront enregistrées.</p></section>{% endif %}
+  </section>
+
+  <section aria-labelledby="actuators-heading">
+    <div class="section-heading"><h2 id="actuators-heading">Actionneurs</h2><a href="{% url 'actuators:all-command-list' %}">Voir les commandes</a></div>
+    {% if actuators %}
+      <div class="table-wrap"><table><thead><tr><th>Nom</th><th>Type</th><th>Espace</th><th>État</th><th>Dernière commande</th></tr></thead><tbody>
+        {% for actuator in actuators %}<tr><td><a href="{% url 'actuators:actuator-detail' actuator.pk %}">{{ actuator.name }}</a></td><td>{{ actuator.get_actuator_type_display }}</td><td>{{ actuator.space.name }}</td><td>{% if actuator.is_active %}Actif{% else %}Inactif{% endif %}{% if actuator.latest_command %} · {{ actuator.latest_command.get_value_display }}{% endif %}</td><td>{% if actuator.latest_command %}{{ actuator.latest_command.get_status_display }} · {{ actuator.latest_command.requested_at|localtime|date:"d/m/Y H:i" }}{% else %}Aucune commande{% endif %}</td></tr>{% endfor %}
+      </tbody></table></div>
+    {% else %}<section class="empty-state"><h2>Aucun actionneur enregistré</h2><p>Les actionneurs apparaîtront ici lorsqu’ils seront créés.</p></section>{% endif %}
+  </section>
+  <script src="{% static 'js/dashboard-chart.js' %}" defer></script>
+{% endblock %}

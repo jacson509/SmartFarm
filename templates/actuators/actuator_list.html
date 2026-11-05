@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Actionneurs — SmartFarm{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div><p class="eyebrow">Équipements</p><h1>Actionneurs</h1></div>
+    <a class="button" href="{% url 'actuators:actuator-create' %}">Ajouter un actionneur</a>
+  </div>
+  <form method="get" class="filter-bar actuator-filter">
+    <label for="actuator-building-filter">Bâtiment</label>
+    <select id="actuator-building-filter" name="building"><option value="">Tous</option>{% for building in buildings %}<option value="{{ building.pk }}" {% if selected_building == building.pk|stringformat:"s" %}selected{% endif %}>{{ building.name }}</option>{% endfor %}</select>
+    <label for="actuator-space-filter">Espace</label>
+    <select id="actuator-space-filter" name="space"><option value="">Tous</option>{% for space in spaces %}<option value="{{ space.pk }}" {% if selected_space == space.pk|stringformat:"s" %}selected{% endif %}>{{ space.name }} — {{ space.building.name }}</option>{% endfor %}</select>
+    <label for="actuator-type-filter">Type</label>
+    <select id="actuator-type-filter" name="actuator_type"><option value="">Tous</option>{% for value, label in actuator_types %}<option value="{{ value }}" {% if selected_type == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <label for="actuator-active-filter">État</label>
+    <select id="actuator-active-filter" name="is_active"><option value="">Tous</option><option value="true" {% if selected_is_active == "true" %}selected{% endif %}>Actif</option><option value="false" {% if selected_is_active == "false" %}selected{% endif %}>Inactif</option></select>
+    <button class="button button-secondary" type="submit">Filtrer</button>
+    {% if selected_building or selected_space or selected_type or selected_is_active %}<a class="text-link" href="{% url 'actuators:actuator-list' %}">Effacer</a>{% endif %}
+  </form>
+  {% if actuators %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>Actionneur</th><th>Type</th><th>Bâtiment / espace</th><th>État</th><th></th></tr></thead>
+      <tbody>{% for actuator in actuators %}
+        <tr>
+          <td><a href="{% url 'actuators:actuator-detail' actuator.pk %}">{{ actuator.name }}</a></td>
+          <td>{{ actuator.get_actuator_type_display }}</td>
+          <td>{{ actuator.space.building.name }}<br><span class="muted">{{ actuator.space.name }}</span></td>
+          <td><span class="badge {% if actuator.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if actuator.is_active %}Actif{% else %}Inactif{% endif %}</span></td>
+          <td><a class="text-link" href="{% url 'actuators:command-list' actuator.pk %}">Commandes ({{ actuator.commands.count }})</a></td>
+        </tr>
+      {% endfor %}</tbody>
+    </table></div>
+  {% else %}
+    <section class="empty-state"><h2>Aucun actionneur trouvé</h2><p>Ajoutez un équipement ou modifiez les filtres.</p></section>
+  {% endif %}
+{% endblock %}

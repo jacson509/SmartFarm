@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Confirmer — SmartFarm{% endblock %}
+{% block content %}
+  <section class="form-panel confirm-panel">
+    <p class="eyebrow">Action à confirmer</p>
+    <h1>{% if has_related_records %}Désactiver le capteur{% else %}Supprimer le capteur{% endif %}</h1>
+    <p>Confirmez l’action pour <strong>{{ sensor.name }}</strong>.</p>
+    {% if has_related_records %}<p class="notice">Des données historiques sont associées. Le capteur sera désactivé afin de les préserver.</p>{% else %}<p class="muted">Aucune donnée historique n’est liée à ce capteur. La suppression sera définitive.</p>{% endif %}
+    <form method="post" action="{{ delete_url }}">
+      {% csrf_token %}
+      <input type="hidden" name="confirmed" value="1">
+      <div class="actions"><button class="button {% if not has_related_records %}button-danger{% endif %}" type="submit">{% if has_related_records %}Désactiver et préserver{% else %}Confirmer la suppression{% endif %}</button><a class="button button-secondary" href="{{ cancel_url }}">Annuler</a></div>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ space.name }} — SmartFarm{% endblock %}
+{% block content %}
+  <p class="eyebrow"><a href="{% url 'facilities:space-list' %}">Espaces</a> / Détail</p>
+  <div class="page-heading">
+    <div><h1>{{ space.name }}</h1><span class="badge {% if space.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if space.is_active %}Actif{% else %}Inactif{% endif %}</span></div>
+    <div class="actions">
+      <a class="button button-secondary" href="{% url 'facilities:space-update' space.pk %}">Modifier</a>
+      <a class="button button-danger-outline" href="{% url 'facilities:space-delete' space.pk %}">Supprimer ou archiver</a>
+    </div>
+  </div>
+  <section class="panel"><dl class="details">
+    <dt>Bâtiment</dt><dd><a href="{% url 'facilities:building-detail' space.building_id %}">{{ space.building.name }}</a></dd>
+    <dt>Description</dt><dd>{{ space.description|default:"—"|linebreaksbr }}</dd>
+    <dt>Créé le</dt><dd>{{ space.created_at|date:"Y-m-d H:i" }}</dd>
+    <dt>Modifié le</dt><dd>{{ space.updated_at|date:"Y-m-d H:i" }}</dd>
+  </dl></section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% load static %}
+<!doctype html>
+<html lang="fr-CA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SmartFarm{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/smartfarm.css' %}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{% url 'dashboard:home' %}">SmartFarm</a>
+    <nav aria-label="Navigation principale">
+      <a href="{% url 'dashboard:home' %}">Dashboard</a>
+      <a href="{% url 'simulator:page' %}">Simulateur</a>
+      <a href="{% url 'facilities:building-list' %}">Bâtiments</a>
+      <a href="{% url 'facilities:space-list' %}">Espaces</a>
+      <a href="{% url 'sensors:sensor-list' %}">Capteurs</a>
+      <a href="{% url 'sensors:measurement-list' %}">Mesures</a>
+      <a href="{% url 'actuators:actuator-list' %}">Actionneurs</a>
+      <a href="{% url 'actuators:all-command-list' %}">Commandes</a>
+    </nav>
+    {% if request.user.is_authenticated %}
+      <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
+        {% csrf_token %}
+        <button class="button button-quiet" type="submit">Déconnexion</button>
+      </form>
+    {% endif %}
+  </header>
+  <main class="page-shell">
+    {% if messages %}
+      <div class="messages" aria-live="polite">
+        {% for message in messages %}
+          <p class="message message-{{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <script src="{% static 'js/facility-forms.js' %}" defer></script>
+</body>
+</html>

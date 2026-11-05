@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ actuator.name }} — SmartFarm{% endblock %}
+{% block content %}
+  <p class="eyebrow"><a href="{% url 'actuators:actuator-list' %}">Actionneurs</a> / Détail</p>
+  <div class="page-heading">
+    <div><h1>{{ actuator.name }}</h1><span class="badge {% if actuator.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if actuator.is_active %}Actif{% else %}Inactif{% endif %}</span></div>
+    <div class="actions">
+      {% if can_receive_command %}<a class="button" href="{% url 'actuators:command-create' actuator.pk %}">Nouvelle commande</a>{% endif %}
+      <a class="button button-secondary" href="{% url 'actuators:command-list' actuator.pk %}">Historique ({{ command_count }})</a>
+      <a class="button button-secondary" href="{% url 'actuators:actuator-update' actuator.pk %}">Modifier</a>
+      <a class="button button-danger-outline" href="{% url 'actuators:actuator-delete' actuator.pk %}">Supprimer ou archiver</a>
+    </div>
+  </div>
+  {% if not can_receive_command %}<p class="notice">Une commande est indisponible tant que l’actionneur, son espace et son bâtiment ne sont pas actifs.</p>{% endif %}
+  <section class="panel"><dl class="details">
+    <dt>Type</dt><dd>{{ actuator.get_actuator_type_display }}</dd>
+    <dt>Bâtiment</dt><dd><a href="{% url 'facilities:building-detail' actuator.space.building_id %}">{{ actuator.space.building.name }}</a></dd>
+    <dt>Espace</dt><dd><a href="{% url 'facilities:space-detail' actuator.space_id %}">{{ actuator.space.name }}</a></dd>
+    <dt>Description</dt><dd>{{ actuator.description|default:"—"|linebreaksbr }}</dd>
+    <dt>État</dt><dd>{% if actuator.is_active %}Actif{% else %}Inactif{% endif %}</dd>
+    <dt>Créé le</dt><dd>{{ actuator.created_at|date:"Y-m-d H:i" }}</dd>
+    <dt>Modifié le</dt><dd>{{ actuator.updated_at|date:"Y-m-d H:i" }}</dd>
+  </dl></section>
+{% endblock %}

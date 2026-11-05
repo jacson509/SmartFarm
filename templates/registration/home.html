@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartFarm</title>
+</head>
+<body>
+  <main>
+    <h1>SmartFarm</h1>
+    <p>Session authentifiée.</p>
+    <form method="post" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button type="submit">Se déconnecter</button>
+    </form>
+  </main>
+</body>
+</html>

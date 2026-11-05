@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Bâtiments — SmartFarm{% endblock %}
+{% block content %}
+  <div class="page-heading">
+    <div><p class="eyebrow">Installations</p><h1>Bâtiments</h1></div>
+    <a class="button" href="{% url 'facilities:building-create' %}">Ajouter un bâtiment</a>
+  </div>
+  {% if buildings %}
+    <div class="card-grid">
+      {% for building in buildings %}
+        <article class="card">
+          <div class="card-heading">
+            <h2><a href="{% url 'facilities:building-detail' building.pk %}">{{ building.name }}</a></h2>
+            <span class="badge {% if building.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if building.is_active %}Actif{% else %}Inactif{% endif %}</span>
+          </div>
+          {% if building.location %}<p class="muted">{{ building.location }}</p>{% endif %}
+          <p>{{ building.description|default:"Aucune description."|truncatewords:24 }}</p>
+          <p class="muted">{{ building.spaces.count }} {% if building.spaces.count == 1 %}espace{% else %}espaces{% endif %}</p>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <section class="empty-state"><h2>Aucun bâtiment</h2><p>Ajoutez le premier bâtiment pour organiser les espaces surveillés.</p></section>
+  {% endif %}
+{% endblock %}

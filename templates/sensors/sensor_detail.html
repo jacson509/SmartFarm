@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ sensor.name }} — SmartFarm{% endblock %}
+{% block content %}
+  <p class="eyebrow"><a href="{% url 'sensors:sensor-list' %}">Capteurs</a> / Détail</p>
+  <div class="page-heading">
+    <div><h1>{{ sensor.name }}</h1><span class="badge {% if sensor.is_active %}badge-active{% else %}badge-inactive{% endif %}">{% if sensor.is_active %}Actif{% else %}Inactif{% endif %}</span></div>
+    <div class="actions">
+      <a class="button button-secondary" href="{% url 'sensors:sensor-measurements' sensor.pk %}">Voir l’historique</a>
+      <a class="button button-secondary" href="{% url 'sensors:sensor-update' sensor.pk %}">Modifier</a>
+      <a class="button button-danger-outline" href="{% url 'sensors:sensor-delete' sensor.pk %}">Supprimer ou archiver</a>
+    </div>
+  </div>
+  <section class="panel"><dl class="details">
+    <dt>Type</dt><dd>{{ sensor.get_sensor_type_display }}</dd>
+    <dt>Unité</dt><dd>{{ sensor.unit }}</dd>
+    <dt>Bâtiment</dt><dd><a href="{% url 'facilities:building-detail' sensor.space.building_id %}">{{ sensor.space.building.name }}</a></dd>
+    <dt>Espace</dt><dd><a href="{% url 'facilities:space-detail' sensor.space_id %}">{{ sensor.space.name }}</a></dd>
+    <dt>Seuil minimum</dt><dd>{{ sensor.minimum_threshold }} {{ sensor.unit }}</dd>
+    <dt>Seuil maximum</dt><dd>{{ sensor.maximum_threshold }} {{ sensor.unit }}</dd>
+    <dt>Description</dt><dd>{{ sensor.description|default:"—"|linebreaksbr }}</dd>
+    <dt>État</dt><dd>{% if sensor.is_active %}Actif{% else %}Inactif{% endif %}</dd>
+    <dt>Créé le</dt><dd>{{ sensor.created_at|date:"Y-m-d H:i" }}</dd>
+    <dt>Modifié le</dt><dd>{{ sensor.updated_at|date:"Y-m-d H:i" }}</dd>
+  </dl></section>
+{% endblock %}

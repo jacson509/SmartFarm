@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load tz %}
+{% block title %}Mesure {{ measurement.pk }} — SmartFarm{% endblock %}
+{% block content %}
+  <p class="eyebrow"><a href="{% url 'sensors:measurement-list' %}">Mesures</a> / Détail</p>
+  <div class="page-heading"><div><h1>Mesure #{{ measurement.pk }}</h1><p class="muted">Enregistrement historique conservé</p></div><a class="button button-secondary" href="{% url 'sensors:sensor-measurements' measurement.sensor_id %}">Historique du capteur</a></div>
+  <section class="panel"><dl class="details">
+    <dt>Capteur</dt><dd><a href="{% url 'sensors:sensor-detail' measurement.sensor_id %}">{{ measurement.sensor.name }}</a></dd>
+    <dt>Type</dt><dd>{{ measurement.sensor.get_sensor_type_display }}</dd>
+    <dt>Valeur</dt><dd><strong>{{ measurement.value }} {{ measurement.sensor.unit }}</strong></dd>
+    <dt>Bâtiment</dt><dd>{{ measurement.sensor.space.building.name }}</dd>
+    <dt>Espace</dt><dd>{{ measurement.sensor.space.name }}</dd>
+    <dt>Date de mesure</dt><dd>{{ measurement.recorded_at|localtime|date:"Y-m-d H:i:s T" }}</dd>
+    <dt>Reçue par le serveur</dt><dd>{{ measurement.received_at|localtime|date:"Y-m-d H:i:s T" }}</dd>
+    <dt>Enregistrée le</dt><dd>{{ measurement.created_at|localtime|date:"Y-m-d H:i:s T" }}</dd>
+  </dl></section>
+{% endblock %}
